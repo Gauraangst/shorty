@@ -7,6 +7,8 @@ import {
   Link, 
   Pencil, 
   Zap,
+  Copy,
+  Check,
 } from 'lucide-react';
 // 👈 REMOVED: Clerk components imports
 
@@ -24,6 +26,7 @@ const ShortenerForm = () => {
     const [shortenedUrl, setShortenedUrl] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [isCopied, setIsCopied] = useState<boolean>(false);
 
     const getLongUrlInp = (e: React.ChangeEvent<HTMLInputElement>) => {
       setLongUrlInput(e.target.value);
@@ -33,10 +36,24 @@ const ShortenerForm = () => {
       setCustomCodeInput(e.target.value);
     }
 
+    const copyToClipboard = async () => {
+      if (shortenedUrl) {
+        const fullUrl = `https://shorty-eerx.vercel.app/${shortenedUrl}`;
+        try {
+          await navigator.clipboard.writeText(fullUrl);
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
+        } catch (err) {
+          console.error('Failed to copy: ', err);
+        }
+      }
+    };
+
     const handleSubmit = async () => {
       setIsLoading(true);
       setError(null);
       setShortenedUrl(null);
+      setIsCopied(false);
 
       const payload = {
         longUrl: longUrlInput,
@@ -106,7 +123,7 @@ const ShortenerForm = () => {
             </label>
             <div className='flex items-center w-full bg-gray-800 border border-gray-700 rounded-lg'>
                 <span className='pl-4 text-gray-500 font-mono select-none'>
-                    shorty.co/
+                    https://shorty-eerx.vercel.app/
                 </span>
                 <input 
                     id="custom-code"
@@ -139,17 +156,35 @@ const ShortenerForm = () => {
             {/* Success Output (Monochrome with Icon) */}
             {shortenedUrl && (
                 <div className='mt-8 p-6 bg-gray-900/70 text-gray-200 border border-gray-600 rounded-lg w-full text-center shadow-lg animate-fade-in'>
-                  <p className='text-lg mb-2 font-medium text-white flex items-center justify-center'>
+                  <p className='text-lg mb-4 font-medium text-white flex items-center justify-center'>
                      <CheckCircle className="w-5 h-5 mr-2 text-white" /> Success! Your Link is Ready:
                   </p>
-                  <a 
-                    href={shortenedUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className='font-mono text-xl text-white break-all underline decoration-white hover:text-gray-300 transition duration-200'
-                  >
-                    {shortenedUrl}
-                  </a>
+                  <div className='flex items-center justify-center gap-3 flex-wrap'>
+                    <a 
+                      href={`https://shorty-eerx.vercel.app/${shortenedUrl}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className='font-mono text-xl text-white break-all underline decoration-white hover:text-gray-300 transition duration-200'
+                    >
+                      https://shorty-eerx.vercel.app/{shortenedUrl}
+                    </a>
+                    <button
+                      onClick={copyToClipboard}
+                      className='flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-200 text-sm font-medium'
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="w-4 h-4" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4" />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
             )}
 
